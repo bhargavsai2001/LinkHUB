@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Link HUB — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0a0a;--surface:#141414;--card:#1c1c1c;--border:#2e2e2e;
+      --accent:#00e5ff;--accent-dim:rgba(0,229,255,.12);--danger:#ff4757;
+      --success:#2ed573;--text:#f0f0f0;--muted:#777;--radius:14px;
+    }
+    html,body{min-height:100%;background:var(--bg);color:var(--text);
+      font-family:"DM Sans",sans-serif;font-size:16px}
+
+    /* no lock screen */
+
+    /* ── SETUP BANNER ── */
+    #setup-banner{
+      background:linear-gradient(135deg,rgba(0,229,255,.1),rgba(0,229,255,.05));
+      border:1px solid rgba(0,229,255,.25);border-radius:var(--radius);
+      padding:18px 20px;margin:0 16px 20px;display:none;
+    }
+    .setup-banner-title{font-weight:600;color:var(--accent);margin-bottom:10px;font-size:.95rem}
+    .setup-steps{color:#bbb;font-size:.85rem;line-height:1.9}
+    .setup-steps a{color:var(--accent)}
+    .setup-input-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .setup-input{
+      flex:1;min-width:200px;padding:10px 14px;background:var(--bg);
+      border:1px solid var(--border);border-radius:10px;color:var(--text);
+      font-size:.85rem;font-family:"DM Sans",sans-serif;outline:none;
+    }
+    .setup-input:focus{border-color:var(--accent)}
+    .setup-save-btn{
+      padding:10px 20px;background:var(--accent);border:none;border-radius:10px;
+      color:#000;font-weight:600;cursor:pointer;font-size:.85rem;white-space:nowrap;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    #main{display:none;max-width:640px;margin:0 auto;padding:20px 16px 80px}
+
+    header{text-align:center;padding:24px 0 28px}
+    .admin-logo{font-family:"Orbitron",monospace;font-size:1.5rem;
+      color:var(--accent);letter-spacing:.12em}
+    .admin-sub{color:var(--muted);font-size:.82rem;margin-top:6px;letter-spacing:.05em}
+
+    /* ── ADD FORM ── */
+    .form-card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);padding:20px;margin-bottom:24px;
+    }
+    .form-card h2{font-size:.9rem;font-weight:600;color:var(--accent);
+      letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+    .field{margin-bottom:12px}
+    .field label{display:block;font-size:.78rem;color:var(--muted);
+      font-weight:500;margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
+    .field input,.field select{
+      width:100%;padding:12px 14px;background:var(--bg);
+      border:1px solid var(--border);border-radius:10px;
+      color:var(--text);font-size:.95rem;font-family:"DM Sans",sans-serif;
+      outline:none;transition:border-color .2s,box-shadow .2s;
+    }
+    .field input:focus,.field select:focus{
+      border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+    .field input::placeholder{color:var(--muted)}
+    .field select option{background:var(--card)}
+    .cat-row{display:flex;gap:8px}
+    .cat-row input{flex:1}
+    .cat-row select{flex:1}
+    .btn-primary{
+      width:100%;padding:13px;background:var(--accent);border:none;
+      border-radius:10px;color:#000;font-size:1rem;font-weight:600;
+      cursor:pointer;transition:opacity .2s,transform .1s;
+      font-family:"DM Sans",sans-serif;margin-top:4px;
+    }
+    .btn-primary:hover{opacity:.85}
+    .btn-primary:active{transform:scale(.98)}
+    .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+
+    /* ── TOAST ── */
+    #toast{
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+      background:var(--success);color:#000;padding:10px 22px;border-radius:50px;
+      font-weight:600;font-size:.9rem;transition:transform .3s;z-index:200;white-space:nowrap;
+    }
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    #toast.error{background:var(--danger);color:#fff}
+
+    /* ── LINKS LIST ── */
+    .list-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .list-header h2{font-size:.9rem;font-weight:600;color:var(--muted);
+      letter-spacing:.08em;text-transform:uppercase}
+    .count-badge{
+      background:var(--accent-dim);color:var(--accent);
+      font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:20px;
+    }
+
+    #links-list{display:flex;flex-direction:column;gap:10px}
+
+    .link-item{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);padding:14px 16px;
+      display:flex;align-items:center;gap:12px;
+      transition:border-color .2s;
+    }
+    .link-item:hover{border-color:#444}
+    .link-favicon{
+      width:34px;height:34px;border-radius:8px;background:var(--surface);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;
+    }
+    .link-favicon img{width:100%;height:100%;object-fit:contain}
+    .link-info{flex:1;min-width:0}
+    .link-name{font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .link-url{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+    .link-cat{
+      font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+      padding:2px 8px;border-radius:20px;background:var(--accent-dim);
+      color:var(--accent);white-space:nowrap;flex-shrink:0;
+    }
+    .link-actions{display:flex;gap:6px;flex-shrink:0}
+    .btn-icon{
+      width:32px;height:32px;border:1px solid var(--border);border-radius:8px;
+      background:transparent;color:var(--muted);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:all .2s;font-size:.9rem;
+    }
+    .btn-icon:hover{border-color:var(--accent);color:var(--accent)}
+    .btn-icon.del:hover{border-color:var(--danger);color:var(--danger)}
+
+    /* ── EDIT MODAL ── */
+    #modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;
+      display:none;align-items:flex-end;justify-content:center;padding:0;
+    }
+    #modal-overlay.open{display:flex}
+    .modal{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:20px 20px 0 0;padding:24px 20px 40px;
+      width:100%;max-width:540px;
+      animation:slideUp .25s ease;
+    }
+    @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal h2{font-size:1rem;font-weight:600;color:var(--accent);margin-bottom:18px;
+      letter-spacing:.06em;text-transform:uppercase}
+    .modal-actions{display:flex;gap:10px;margin-top:16px}
+    .btn-secondary{
+      flex:1;padding:12px;background:transparent;border:1px solid var(--border);
+      border-radius:10px;color:var(--text);font-size:.95rem;cursor:pointer;
+      font-family:"DM Sans",sans-serif;transition:border-color .2s;
+    }
+    .btn-secondary:hover{border-color:var(--accent)}
+    .btn-save{
+      flex:2;padding:12px;background:var(--accent);border:none;
+      border-radius:10px;color:#000;font-size:.95rem;font-weight:600;
+      cursor:pointer;font-family:"DM Sans",sans-serif;
+    }
+
+    /* ── EMPTY ── */
+    #empty-list{
+      text-align:center;padding:48px 20px;color:var(--muted);display:none;
+    }
+    #empty-list p{font-size:.95rem;margin-top:12px}
+
+
+  </style>
+</head>
+<body>
+
+<!-- ── MAIN ADMIN UI ── -->
+<div id="main" style="display:block">
+  <header>
+    <div class="admin-logo">⚙ ADMIN</div>
+    <div class="admin-sub">Link HUB Manager</div>
+  </header>
+
+  <!-- Setup banner (shown when not configured) -->
+  <div id="setup-banner">
+    <div class="setup-banner-title">🚀 First-time Setup — Get your free JSONBin credentials</div>
+    <div class="setup-steps">
+      1. Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> → Sign up free<br>
+      2. Click <strong>API Keys</strong> → copy your <strong>Master Key</strong><br>
+      3. Click <strong>Bins → Create Bin</strong> → paste <code>{"links":[]}</code> → Save<br>
+      4. Copy the <strong>Bin ID</strong> from the URL<br>
+      5. Paste both below and click Save — done forever!
+    </div>
+    <div class="setup-input-row">
+      <input class="setup-input" id="cfg-binid" placeholder="Bin ID  (e.g. 64abc123…)"/>
+      <input class="setup-input" id="cfg-apikey" placeholder="Master Key  ($2b$…)"/>
+      <button class="setup-save-btn" onclick="saveConfig()">Save</button>
+    </div>
+  </div>
+
+  <!-- Add link form -->
+  <div class="form-card">
+    <h2>➕ Add New Link</h2>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="f-name" placeholder="YouTube" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>URL</label>
+      <input type="url" id="f-url" placeholder="https://youtube.com" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Category <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <div class="cat-row">
+        <input type="text" id="f-cat" placeholder="Entertainment" autocomplete="off" list="cat-suggestions"/>
+        <datalist id="cat-suggestions"></datalist>
+      </div>
+    </div>
+    <button class="btn-primary" id="add-btn" onclick="addLink()">Add Link</button>
+  </div>
+
+  <!-- Links list -->
+  <div class="list-header">
+    <h2>Your Links</h2>
+    <span class="count-badge" id="count-badge">0</span>
+  </div>
+  <div id="empty-list">
+    <div style="font-size:2.5rem">🔗</div>
+    <p>No links yet — add your first one above!</p>
+  </div>
+  <div id="links-list"></div>
+
+</div>
+
+<!-- ── EDIT MODAL ── -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h2>✏️ Edit Link</h2>
+    <input type="hidden" id="edit-idx"/>
+    <div class="field"><label>Name</label>
+      <input type="text" id="e-name" placeholder="YouTube"/></div>
+    <div class="field"><label>URL</label>
+      <input type="url" id="e-url" placeholder="https://…"/></div>
+    <div class="field"><label>Category</label>
+      <input type="text" id="e-cat" placeholder="Entertainment" list="cat-suggestions"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ══════════════════════════════════════════════
+  //  CONFIG — these get saved to localStorage
+  //  after first-time setup. You can also hard-
+  //  code them here if you prefer:
+  //
+  //  const HARD_BIN_ID  = 'YOUR_BIN_ID';
+  //  const HARD_API_KEY = 'YOUR_API_KEY';
+  // ══════════════════════════════════════════════
+  const HARD_BIN_ID  = '';
+  const HARD_API_KEY = '';
+  // ══════════════════════════════════════════════
+
+  let links = [];
+  let cfg = {};
+
+  // no auth
+
+  // ── CONFIG ──────────────────────────────────────
+  function loadCfg() {
+    const stored = JSON.parse(localStorage.getItem('hub_cfg') || '{}');
+    cfg.binId  = HARD_BIN_ID  || stored.binId  || '';
+    cfg.apiKey = HARD_API_KEY || stored.apiKey || '';
+  }
+
+  function saveConfig() {
+    const binId  = document.getElementById('cfg-binid').value.trim();
+    const apiKey = document.getElementById('cfg-apikey').value.trim();
+    if (!binId || !apiKey) { toast('Enter both Bin ID and API Key', true); return; }
+    localStorage.setItem('hub_cfg', JSON.stringify({ binId, apiKey }));
+    cfg.binId = binId; cfg.apiKey = apiKey;
+    document.getElementById('setup-banner').style.display = 'none';
+    toast('Config saved!');
+    fetchLinks();
+  }
+
+  // ── JSONBIN API ─────────────────────────────────
+  async function fetchLinks() {
+    if (!cfg.binId || !cfg.apiKey) {
+      document.getElementById('setup-banner').style.display = 'block';
+      renderList([]);
+      return;
+    }
+    try {
+      const r = await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`, {
+        headers: { 'X-Master-Key': cfg.apiKey, 'X-Bin-Meta': 'false' },
+        cache: 'no-cache'
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status} — check your Bin ID and API Key`);
+      const data = await r.json();
+      links = Array.isArray(data.links) ? data.links : [];
+      renderList(links);
+    } catch (e) {
+      toast(e.message, true);
+    }
+  }
+
+  async function saveLinks() {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': cfg.apiKey
+      },
+      body: JSON.stringify({ links })
+    });
+    if (!r.ok) throw new Error(`Save failed: HTTP ${r.status}`);
+  }
+
+  // ── ADD ─────────────────────────────────────────
+  async function addLink() {
+    const name = document.getElementById('f-name').value.trim();
+    const url  = document.getElementById('f-url').value.trim();
+    const cat  = document.getElementById('f-cat').value.trim();
+    if (!name) { toast('Enter a name', true); return; }
+    if (!url)  { toast('Enter a URL', true); return; }
+
+    const btn = document.getElementById('add-btn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      links.push({ name, url, category: cat });
+      await saveLinks();
+      renderList(links);
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-url').value  = '';
+      document.getElementById('f-cat').value  = '';
+      toast('Link added ✓');
+    } catch(e) {
+      links.pop();
+      toast(e.message, true);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Add Link';
+    }
+  }
+
+  // ── DELETE ──────────────────────────────────────
+  async function deleteLink(idx) {
+    if (!confirm(`Delete "${links[idx].name}"?`)) return;
+    const removed = links.splice(idx, 1);
+    try {
+      await saveLinks();
+      renderList(links);
+      toast('Deleted');
+    } catch(e) {
+      links.splice(idx, 0, ...removed);
+      toast(e.message, true);
+    }
+  }
+
+  // ── EDIT MODAL ──────────────────────────────────
+  function openEdit(idx) {
+    document.getElementById('edit-idx').value = idx;
+    document.getElementById('e-name').value = links[idx].name  || '';
+    document.getElementById('e-url').value  = links[idx].url   || '';
+    document.getElementById('e-cat').value  = links[idx].category || '';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (!e || e.target === document.getElementById('modal-overlay'))
+      document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  async function saveEdit() {
+    const idx  = parseInt(document.getElementById('edit-idx').value);
+    const name = document.getElementById('e-name').value.trim();
+    const url  = document.getElementById('e-url').value.trim();
+    const cat  = document.getElementById('e-cat').value.trim();
+    if (!name || !url) { toast('Name and URL required', true); return; }
+    const old = { ...links[idx] };
+    links[idx] = { name, url, category: cat };
+    try {
+      await saveLinks();
+      renderList(links);
+      closeModal();
+      toast('Saved ✓');
+    } catch(e) {
+      links[idx] = old;
+      toast(e.message, true);
+    }
+  }
+
+  // ── RENDER LIST ─────────────────────────────────
+  function renderList(arr) {
+    const list  = document.getElementById('links-list');
+    const empty = document.getElementById('empty-list');
+    const badge = document.getElementById('count-badge');
+    badge.textContent = arr.length;
+
+    // Update category datalist
+    const cats = [...new Set(arr.map(l => l.category).filter(Boolean))];
+    document.getElementById('cat-suggestions').innerHTML =
+      cats.map(c => `<option value="${c}">`).join('');
+
+    if (!arr.length) {
+      list.innerHTML = ''; empty.style.display = 'block'; return;
+    }
+    empty.style.display = 'none';
+
+    list.innerHTML = arr.map((l, i) => {
+      let fav = '';
+      try { fav = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(l.url).hostname}`; } catch {}
+      return `
+      <div class="link-item">
+        <div class="link-favicon">
+          ${fav ? `<img src="${fav}" alt="" onerror="this.style.display='none'">` : '🔗'}
+        </div>
+        <div class="link-info">
+          <div class="link-name">${esc(l.name)}</div>
+          <div class="link-url">${esc((l.url||'').replace(/^https?:\/\//,''))}</div>
+        </div>
+        ${l.category ? `<span class="link-cat">${esc(l.category)}</span>` : ''}
+        <div class="link-actions">
+          <button class="btn-icon" onclick="openEdit(${i})" title="Edit">✏️</button>
+          <button class="btn-icon del" onclick="deleteLink(${i})" title="Delete">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── TOAST ────────────────────────────────────────
+  let toastTimer;
+  function toast(msg, isError = false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = isError ? 'error' : '';
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── INIT ─────────────────────────────────────────
+  function init() {
+    loadCfg();
+    fetchLinks();
+  }
+
+  init();
+</script>
+</body>
+</html>
