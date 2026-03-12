@@ -210,8 +210,8 @@
   }
 
   async function loadLinks(){
-    if(JSONBIN_BIN_ID==='YOUR_BIN_ID'){
-      setStatus('⚙ Setup needed — open <a href="admin.html" style="color:var(--accent)">admin.html</a> to configure.','error');
+    if(!JSONBIN_BIN_ID || !JSONBIN_API_KEY){
+      setStatus('⚙ Setup needed — open <a href="admin.html" style="color:var(--accent)">admin.html</a> and enter your JSONBin credentials first.','error');
       return;
     }
     try{
