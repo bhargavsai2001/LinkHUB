@@ -46,6 +46,13 @@
     .admin-logo{font-family:"Orbitron",monospace;font-size:1.5rem;
       color:var(--accent);letter-spacing:.12em}
     .admin-sub{color:var(--muted);font-size:.82rem;margin-top:6px;letter-spacing:.05em}
+    .home-btn{
+      display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+      padding:9px 20px;background:transparent;border:1px solid var(--border);
+      border-radius:50px;color:var(--muted);font-size:.85rem;font-weight:500;
+      text-decoration:none;transition:all .2s;letter-spacing:.03em;
+    }
+    .home-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 
     /* ── ADD FORM ── */
     .form-card{
@@ -177,6 +184,7 @@
   <header>
     <div class="admin-logo">⚙ ADMIN</div>
     <div class="admin-sub">Link HUB Manager</div>
+    <a href="index.html" class="home-btn">← Back to Home</a>
   </header>
 
   <!-- Setup banner (shown when not configured) -->
@@ -259,8 +267,8 @@
   //  const HARD_BIN_ID  = 'YOUR_BIN_ID';
   //  const HARD_API_KEY = 'YOUR_API_KEY';
   // ══════════════════════════════════════════════
-  const HARD_BIN_ID  = '';
-  const HARD_API_KEY = '';
+  const HARD_BIN_ID  = '69b28dafc3097a1dd51b9db9';
+  const HARD_API_KEY = '$2a$10$/HIqiLHK//TTTu704kpJ/eVosICfYpkdoo0tqf7IPlQl8QxGrYzSS';
   // ══════════════════════════════════════════════
 
   let links = [];
