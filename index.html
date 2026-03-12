@@ -1,482 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Link HUB</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #05050f;
-      --surface: #0d0d1f;
-      --card: #111128;
-      --border: #2a2a5a;
-      --accent: #00d4ff;
-      --accent2: #7b2fff;
-      --accent3: #ff2d78;
-      --text: #e0e0ff;
-      --muted: #6060a0;
-      --glow: 0 0 20px rgba(0,212,255,0.3);
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#05050f;--surface:#0d0d1f;--card:#111128;--border:#2a2a5a;
+      --accent:#00d4ff;--accent2:#7b2fff;--accent3:#ff2d78;
+      --text:#e0e0ff;--muted:#6060a0;--glow:0 0 20px rgba(0,212,255,0.3);
     }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Rajdhani', sans-serif;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      z-index: 0;
-      animation: gridShift 20s linear infinite;
-    }
-
-    @keyframes gridShift {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(60px); }
-    }
-
-    body::after {
-      content: '';
-      position: fixed;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background:
-        radial-gradient(ellipse at 30% 20%, rgba(123,47,255,0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(0,212,255,0.06) 0%, transparent 50%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    #app {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      padding: 0 0 60px;
-    }
-
-    header {
-      text-align: center;
-      padding: 50px 20px 30px;
-    }
-
-    header::after {
-      content: '';
-      display: block;
-      width: 200px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      margin: 24px auto 0;
-    }
-
-    .logo {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      font-weight: 900;
-      letter-spacing: 0.15em;
-      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1;
-      animation: pulseGlow 4s ease-in-out infinite;
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { filter: brightness(1); }
-      50%       { filter: brightness(1.2); }
-    }
-
-    .tagline {
-      font-size: 1rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 10px;
-      font-weight: 300;
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 0 24px 32px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .search-wrap {
-      position: relative;
-      flex: 1;
-      min-width: 260px;
-      max-width: 500px;
-    }
-
-    .search-wrap svg {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      pointer-events: none;
-    }
-
-    #search {
-      width: 100%;
-      padding: 14px 16px 14px 48px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 1.1rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    #search:focus {
-      border-color: var(--accent);
-      box-shadow: var(--glow);
-    }
-
-    #search::placeholder { color: var(--muted); }
-
-    .filter-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .tab {
-      padding: 10px 18px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      transition: all 0.2s;
-      user-select: none;
-      text-transform: uppercase;
-    }
-
-    .tab:hover { color: var(--text); border-color: var(--accent2); }
-
-    .tab.active {
-      background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(123,47,255,0.15));
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    #status {
-      text-align: center;
-      padding: 12px 24px;
-      font-size: 0.95rem;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-      min-height: 44px;
-      line-height: 1.7;
-    }
-
-    .status-loading {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--accent) !important;
-    }
-
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(0,212,255,0.2);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .status-error { color: var(--accent3) !important; }
-
-    #grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      padding: 8px 24px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .card {
-      position: relative;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-      animation: fadeUp 0.4s ease both;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .card:hover {
-      transform: translateY(-4px) scale(1.01);
-      border-color: var(--accent);
-      box-shadow: 0 8px 32px rgba(0,212,255,0.15), 0 0 0 1px rgba(0,212,255,0.1);
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
-      opacity: 0;
-      transition: opacity 0.25s;
-    }
-
-    .card:hover::before { opacity: 1; }
-
-    .card-favicon {
-      width: 36px; height: 36px;
-      border-radius: 8px;
-      background: var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .card-favicon img { width: 100%; height: 100%; object-fit: contain; }
-    .card-favicon .fallback { font-size: 18px; }
-
-    .card-body {
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex: 1;
-    }
-
-    .card-info { flex: 1; min-width: 0; }
-
-    .card-name {
-      font-family: 'Orbitron', monospace;
-      font-size: 0.88rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .card-url {
-      font-size: 0.78rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-top: 3px;
-    }
-
-    .card-footer {
-      padding: 8px 20px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-category {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 20px;
-      border: 1px solid;
-    }
-
-    .card-arrow {
-      color: var(--muted);
-      font-size: 1.1rem;
-      transition: color 0.2s, transform 0.2s;
-    }
-
-    .card:hover .card-arrow { color: var(--accent); transform: translateX(4px); }
-
-    #empty {
-      display: none;
-      text-align: center;
-      padding: 80px 24px;
-      color: var(--muted);
-    }
-
-    #empty svg { opacity: 0.3; margin-bottom: 16px; }
-    #empty p { font-size: 1.2rem; letter-spacing: 0.1em; }
-
-    .cat-0 { color: #00d4ff; border-color: rgba(0,212,255,0.4);  background: rgba(0,212,255,0.08); }
-    .cat-1 { color: #7b2fff; border-color: rgba(123,47,255,0.4); background: rgba(123,47,255,0.08); }
-    .cat-2 { color: #ff2d78; border-color: rgba(255,45,120,0.4); background: rgba(255,45,120,0.08); }
-    .cat-3 { color: #ffb700; border-color: rgba(255,183,0,0.4);  background: rgba(255,183,0,0.08); }
-    .cat-4 { color: #00ff9d; border-color: rgba(0,255,157,0.4);  background: rgba(0,255,157,0.08); }
-    .cat-5 { color: #ff6b35; border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.08); }
-
-    footer {
-      text-align: center;
-      padding: 40px 24px 20px;
-      color: var(--muted);
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-    }
-
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    a:focus, button:focus, input:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: 3px;
-    }
-
-    @media (max-width: 600px) {
-      #grid { grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px 12px; }
-      .card-body { padding: 14px; gap: 10px; }
-      .card-name { font-size: 0.78rem; }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:"Rajdhani",sans-serif;overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:0;
+      background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+      background-size:60px 60px;z-index:0;animation:gridShift 20s linear infinite}
+    @keyframes gridShift{0%{transform:translateY(0)}100%{transform:translateY(60px)}}
+    body::after{content:"";position:fixed;top:-50%;left:-50%;width:200%;height:200%;
+      background:radial-gradient(ellipse at 30% 20%,rgba(123,47,255,0.08) 0%,transparent 50%),
+                 radial-gradient(ellipse at 70% 80%,rgba(0,212,255,0.06) 0%,transparent 50%);
+      z-index:0;pointer-events:none}
+    #app{position:relative;z-index:1;min-height:100vh;padding:0 0 60px}
+    header{text-align:center;padding:50px 20px 30px}
+    header::after{content:"";display:block;width:200px;height:1px;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:24px auto 0}
+    .logo{font-family:"Orbitron",monospace;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;
+      letter-spacing:0.15em;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      line-height:1;animation:pulseGlow 4s ease-in-out infinite}
+    @keyframes pulseGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.2)}}
+    .tagline{font-size:1rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);margin-top:10px;font-weight:300}
+    .controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;
+      padding:0 24px 32px;max-width:1200px;margin:0 auto}
+    .search-wrap{position:relative;flex:1;min-width:260px;max-width:500px}
+    .search-wrap svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+    #search{width:100%;padding:14px 16px 14px 48px;background:var(--card);border:1px solid var(--border);
+      border-radius:12px;color:var(--text);font-family:"Rajdhani",sans-serif;font-size:1.1rem;
+      outline:none;transition:border-color .2s,box-shadow .2s}
+    #search:focus{border-color:var(--accent);box-shadow:var(--glow)}
+    #search::placeholder{color:var(--muted)}
+    .filter-tabs{display:flex;flex-wrap:wrap;gap:8px}
+    .tab{padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;
+      color:var(--muted);font-family:"Rajdhani",sans-serif;font-size:.95rem;font-weight:600;
+      letter-spacing:.05em;cursor:pointer;transition:all .2s;user-select:none;text-transform:uppercase}
+    .tab:hover{color:var(--text);border-color:var(--accent2)}
+    .tab.active{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(123,47,255,.15));border-color:var(--accent);color:var(--accent)}
+    #status{text-align:center;padding:12px 24px;font-size:.95rem;color:var(--muted);letter-spacing:.05em;min-height:44px;line-height:1.7}
+    .status-loading{display:inline-flex;align-items:center;gap:10px;color:var(--accent)!important}
+    .spinner{width:18px;height:18px;border:2px solid rgba(0,212,255,.2);border-top-color:var(--accent);
+      border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .status-error{color:var(--accent3)!important}
+    #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;
+      padding:8px 24px;max-width:1400px;margin:0 auto}
+    .card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:16px;
+      overflow:hidden;cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s;
+      animation:fadeUp .4s ease both;text-decoration:none;display:flex;flex-direction:column}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .card:hover{transform:translateY(-4px) scale(1.01);border-color:var(--accent);
+      box-shadow:0 8px 32px rgba(0,212,255,.15),0 0 0 1px rgba(0,212,255,.1)}
+    .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--accent2),var(--accent),var(--accent3));opacity:0;transition:opacity .25s}
+    .card:hover::before{opacity:1}
+    .card-favicon{width:36px;height:36px;border-radius:8px;background:var(--surface);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+    .card-favicon img{width:100%;height:100%;object-fit:contain}
+    .card-favicon .fallback{font-size:18px}
+    .card-body{padding:20px;display:flex;align-items:center;gap:14px;flex:1}
+    .card-info{flex:1;min-width:0}
+    .card-name{font-family:"Orbitron",monospace;font-size:.88rem;font-weight:700;letter-spacing:.05em;
+      color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card-url{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+    .card-footer{padding:8px 20px 14px;display:flex;align-items:center;justify-content:space-between}
+    .card-category{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+      padding:3px 10px;border-radius:20px;border:1px solid}
+    .card-arrow{color:var(--muted);font-size:1.1rem;transition:color .2s,transform .2s}
+    .card:hover .card-arrow{color:var(--accent);transform:translateX(4px)}
+    #empty{display:none;text-align:center;padding:80px 24px;color:var(--muted)}
+    #empty svg{opacity:.3;margin-bottom:16px}
+    #empty p{font-size:1.2rem;letter-spacing:.1em}
+    .cat-0{color:#00d4ff;border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.08)}
+    .cat-1{color:#7b2fff;border-color:rgba(123,47,255,.4);background:rgba(123,47,255,.08)}
+    .cat-2{color:#ff2d78;border-color:rgba(255,45,120,.4);background:rgba(255,45,120,.08)}
+    .cat-3{color:#ffb700;border-color:rgba(255,183,0,.4);background:rgba(255,183,0,.08)}
+    .cat-4{color:#00ff9d;border-color:rgba(0,255,157,.4);background:rgba(0,255,157,.08)}
+    .cat-5{color:#ff6b35;border-color:rgba(255,107,53,.4);background:rgba(255,107,53,.08)}
+    footer{text-align:center;padding:40px 24px 20px;color:var(--muted);font-size:.82rem;letter-spacing:.08em}
+    footer a{color:var(--accent);text-decoration:none}
+    footer a:hover{text-decoration:underline}
+    a:focus,button:focus,input:focus{outline:2px solid var(--accent);outline-offset:3px}
+    @media(max-width:600px){
+      #grid{grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px}
+      .card-body{padding:14px;gap:10px}
+      .card-name{font-size:.78rem}
     }
   </style>
 </head>
 <body>
 <div id="app">
-
   <header>
     <div class="logo">LINK HUB</div>
     <div class="tagline">Your Personal Gateway</div>
   </header>
-
   <div class="controls">
     <div class="search-wrap">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
       </svg>
-      <input type="text" id="search" placeholder="Search links…" autocomplete="off" />
+      <input type="text" id="search" placeholder="Search links…" autocomplete="off"/>
     </div>
     <div class="filter-tabs" id="tabs">
       <button class="tab active" data-cat="all">All</button>
     </div>
   </div>
-
-  <div id="status">
-    <span class="status-loading"><span class="spinner"></span> Loading links from Google Sheets…</span>
-  </div>
-
+  <div id="status"><span class="status-loading"><span class="spinner"></span> Loading links…</span></div>
   <div id="grid"></div>
-
   <div id="empty">
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
     </svg>
     <p>No links found</p>
   </div>
-
-  <footer>
-    Powered by <a href="https://sheets.google.com" target="_blank" rel="noopener">Google Sheets</a>
-    &nbsp;·&nbsp; Add a row in your sheet to add a new link here.
-  </footer>
-
+  <footer><a href="admin.html">⚙ Manage Links</a></footer>
 </div>
 <script>
+  // ══════════════════════════════════════════════
+  //  PASTE YOUR JSONBIN CONFIG HERE
+  // ══════════════════════════════════════════════
+  const JSONBIN_BIN_ID  = 'YOUR_BIN_ID';
+  const JSONBIN_API_KEY = 'YOUR_API_KEY';
+  // ══════════════════════════════════════════════
 
-</div>
-<script>
-  // ╔══════════════════════════════════════════════════════════════════╗
-  // ║  STEP 1 — Paste your Google Apps Script Web App URL below      ║
-  // ║                                                                  ║
-  // ║  See SETUP.md (or the instructions below) to get this URL.     ║
-  // ╚══════════════════════════════════════════════════════════════════╝
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWX9XDgXowbW8RhAakF5aAs4MDzTNaErUv91fqecwBlLaTDUJKK_31G3r_Jlanu3aHaw/exec';
+  let allLinks = [], activeCategory = 'all';
+  const catColors = {}; let catIdx = 0;
 
-  // ── internals ──────────────────────────────────────────────────────
-  let allLinks = [];
-  let activeCategory = 'all';
-  const catColors = {};
-  let catIdx = 0;
-
-  function catClass(cat) {
-    if (!cat) return 'cat-0';
-    if (!catColors[cat]) catColors[cat] = `cat-${catIdx++ % 6}`;
+  function catClass(cat){
+    if(!cat) return 'cat-0';
+    if(!catColors[cat]) catColors[cat]=`cat-${catIdx++%6}`;
     return catColors[cat];
   }
-
-  function faviconUrl(url) {
-    try { return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`; }
-    catch { return ''; }
+  function faviconUrl(url){
+    try{return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;}catch{return '';}
   }
-
-  function emoji(name) {
-    const n = (name||'').toLowerCase();
-    if (n.includes('youtube'))                      return '▶';
-    if (n.includes('netflix')||n.includes('prime')) return '🎬';
-    if (n.includes('github'))                       return '⌨';
-    if (n.includes('google'))                       return '🔍';
-    if (n.includes('reddit'))                       return '💬';
-    if (n.includes('twitter')||n.includes('x.com')) return '𝕏';
-    if (n.includes('instagram'))                    return '📷';
-    if (n.includes('facebook'))                     return '👥';
-    if (n.includes('twitch'))                       return '🎮';
-    if (n.includes('spotify')||n.includes('music')) return '🎵';
-    if (n.includes('news')||n.includes('bbc'))      return '📰';
+  function emoji(name){
+    const n=(name||'').toLowerCase();
+    if(n.includes('youtube')) return '▶';
+    if(n.includes('netflix')||n.includes('prime')) return '🎬';
+    if(n.includes('github')) return '⌨';
+    if(n.includes('google')) return '🔍';
+    if(n.includes('reddit')) return '💬';
+    if(n.includes('twitter')||n.includes('x.com')) return '𝕏';
+    if(n.includes('instagram')) return '📷';
+    if(n.includes('facebook')) return '👥';
+    if(n.includes('twitch')) return '🎮';
+    if(n.includes('spotify')||n.includes('music')) return '🎵';
     return '🔗';
   }
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-  function esc(s) {
-    return String(s||'')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function renderCards(links) {
-    const grid  = document.getElementById('grid');
-    const empty = document.getElementById('empty');
-    if (!links.length) {
-      grid.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
-    empty.style.display = 'none';
-    grid.innerHTML = links.map((l, i) => {
-      const fav   = faviconUrl(l.url);
-      const cc    = catClass(l.category);
-      const delay = Math.min(i * 0.04, 0.8);
-      return `
-      <a class="card" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"
-         style="animation-delay:${delay}s">
+  function renderCards(links){
+    const grid=document.getElementById('grid'), empty=document.getElementById('empty');
+    if(!links.length){grid.innerHTML='';empty.style.display='block';return;}
+    empty.style.display='none';
+    grid.innerHTML=links.map((l,i)=>{
+      const fav=faviconUrl(l.url), cc=catClass(l.category), delay=Math.min(i*.04,.8);
+      return `<a class="card" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" style="animation-delay:${delay}s">
         <div class="card-body">
           <div class="card-favicon">
-            ${fav
-              ? `<img src="${fav}" alt=""
-                      onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-                 <span class="fallback" style="display:none">${emoji(l.name)}</span>`
-              : `<span class="fallback">${emoji(l.name)}</span>`}
+            ${fav?`<img src="${fav}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+                   <span class="fallback" style="display:none">${emoji(l.name)}</span>`
+                :`<span class="fallback">${emoji(l.name)}</span>`}
           </div>
           <div class="card-info">
             <div class="card-name">${esc(l.name)}</div>
@@ -484,95 +179,64 @@
           </div>
         </div>
         <div class="card-footer">
-          ${l.category
-            ? `<span class="card-category ${cc}">${esc(l.category)}</span>`
-            : `<span></span>`}
+          ${l.category?`<span class="card-category ${cc}">${esc(l.category)}</span>`:'<span></span>'}
           <span class="card-arrow">→</span>
         </div>
       </a>`;
     }).join('');
   }
 
-  function buildTabs(links) {
-    const cats = [...new Set(links.map(l => l.category).filter(Boolean))].sort();
-    const tabs = document.getElementById('tabs');
-    // remove old dynamic tabs first
-    document.querySelectorAll('.tab:not([data-cat="all"])').forEach(t => t.remove());
-    cats.forEach(cat => {
-      const btn = document.createElement('button');
-      btn.className = 'tab';
-      btn.dataset.cat = cat;
-      btn.textContent = cat;
-      tabs.appendChild(btn);
+  function buildTabs(links){
+    const cats=[...new Set(links.map(l=>l.category).filter(Boolean))].sort();
+    document.querySelectorAll('.tab:not([data-cat="all"])').forEach(t=>t.remove());
+    cats.forEach(cat=>{
+      const btn=document.createElement('button');
+      btn.className='tab'; btn.dataset.cat=cat; btn.textContent=cat;
+      document.getElementById('tabs').appendChild(btn);
     });
   }
 
-  function applyFilters() {
-    const q = document.getElementById('search').value.trim().toLowerCase();
-    let res = allLinks;
-    if (activeCategory !== 'all')
-      res = res.filter(l => l.category === activeCategory);
-    if (q)
-      res = res.filter(l =>
-        l.name.toLowerCase().includes(q) ||
-        l.url.toLowerCase().includes(q) ||
-        (l.category||'').toLowerCase().includes(q));
+  function applyFilters(){
+    const q=document.getElementById('search').value.trim().toLowerCase();
+    let res=allLinks;
+    if(activeCategory!=='all') res=res.filter(l=>l.category===activeCategory);
+    if(q) res=res.filter(l=>l.name.toLowerCase().includes(q)||l.url.toLowerCase().includes(q)||(l.category||'').toLowerCase().includes(q));
     renderCards(res);
   }
 
-  function setStatus(html, type) {
-    const el = document.getElementById('status');
-    el.className = type ? `status-${type}` : '';
-    el.innerHTML = html;
+  function setStatus(html,type){
+    const el=document.getElementById('status');
+    el.className=type?`status-${type}`:''; el.innerHTML=html;
   }
 
-  async function loadSheet() {
-    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL') {
-      setStatus(
-        '⚙ <strong>Setup needed:</strong> Follow the instructions in <code>SETUP.md</code> to create your Apps Script, then paste the URL into <code>index.html</code>.',
-        'error'
-      );
+  async function loadLinks(){
+    if(JSONBIN_BIN_ID==='YOUR_BIN_ID'){
+      setStatus('⚙ Setup needed — open <a href="admin.html" style="color:var(--accent)">admin.html</a> to configure.','error');
       return;
     }
-
-    try {
-      // Apps Script Web App returns JSON with CORS headers — works everywhere
-      const res = await fetch(APPS_SCRIPT_URL, { cache: 'no-cache' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-
-      if (data.error) throw new Error(data.error);
-      if (!Array.isArray(data.links)) throw new Error('Unexpected response from Apps Script.');
-
-      allLinks = data.links.filter(l => l.name && l.url);
-      if (!allLinks.length) throw new Error('No valid rows found — add Name + URL rows to your sheet!');
-
+    try{
+      const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`,{
+        headers:{'X-Master-Key':JSONBIN_API_KEY,'X-Bin-Meta':'false'},
+        cache:'no-cache'
+      });
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data=await r.json();
+      allLinks=(data.links||[]).filter(l=>l.name&&l.url);
       buildTabs(allLinks);
       renderCards(allLinks);
-      setStatus(`✦ ${allLinks.length} link${allLinks.length !== 1 ? 's' : ''} loaded`);
-    } catch (err) {
-      console.error(err);
-      setStatus(
-        `⚠ ${esc(err.message)}<br>
-         <small>Check: Apps Script URL is correct · Script is deployed as "Anyone" can access</small>`,
-        'error'
-      );
+      setStatus(`✦ ${allLinks.length} link${allLinks.length!==1?'s':''} loaded`);
+    }catch(err){
+      setStatus(`⚠ ${esc(err.message)}<br><small>Check your BIN_ID and API_KEY in index.html</small>`,'error');
     }
   }
 
-  // ── events ──────────────────────────────────────────────────────────
-  document.getElementById('search').addEventListener('input', applyFilters);
-
-  document.getElementById('tabs').addEventListener('click', e => {
-    const btn = e.target.closest('.tab');
-    if (!btn) return;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    activeCategory = btn.dataset.cat;
-    applyFilters();
+  document.getElementById('search').addEventListener('input',applyFilters);
+  document.getElementById('tabs').addEventListener('click',e=>{
+    const btn=e.target.closest('.tab'); if(!btn) return;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active'); activeCategory=btn.dataset.cat; applyFilters();
   });
-
-  loadSheet();
+  loadLinks();
 </script>
 </body>
 </html>
