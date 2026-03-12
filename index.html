@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Link HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #05050f;
+      --surface: #0d0d1f;
+      --card: #111128;
+      --border: #2a2a5a;
+      --accent: #00d4ff;
+      --accent2: #7b2fff;
+      --accent3: #ff2d78;
+      --text: #e0e0ff;
+      --muted: #6060a0;
+      --glow: 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 0;
+      animation: gridShift 20s linear infinite;
+    }
+
+    @keyframes gridShift {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 30% 20%, rgba(123,47,255,0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 80%, rgba(0,212,255,0.06) 0%, transparent 50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 50px 20px 30px;
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      display: block;
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      margin: 24px auto 0;
+    }
+
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      line-height: 1;
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.2); }
+    }
+
+    .tagline {
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 10px;
+      font-weight: 300;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 0 24px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+      max-width: 500px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    #search {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #search:focus {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    #search::placeholder { color: var(--muted); }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+      text-transform: uppercase;
+    }
+
+    .tab:hover { color: var(--text); border-color: var(--accent2); }
+    .tab.active {
+      background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(123,47,255,0.15));
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Status bar */
+    #status {
+      text-align: center;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      min-height: 44px;
+    }
+
+    .status-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent) !important;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,212,255,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-error { color: var(--accent3) !important; }
+
+    /* Grid */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      padding: 8px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Card */
+    .card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.4s ease both;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:hover {
+      transform: translateY(-4px) scale(1.01);
+      border-color: var(--accent);
+      box-shadow: 0 8px 32px rgba(0,212,255,0.15), 0 0 0 1px rgba(0,212,255,0.1);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-favicon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .card-favicon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .card-favicon .fallback { font-size: 16px; }
+
+    .card-body {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .card-info { flex: 1; min-width: 0; }
+
+    .card-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-url {
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 3px;
+    }
+
+    .card-footer {
+      padding: 8px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-category {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .card-arrow {
+      color: var(--muted);
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .card:hover .card-arrow {
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    /* Empty state */
+    #empty {
+      display: none;
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--muted);
+    }
+
+    #empty svg { opacity: 0.3; margin-bottom: 16px; }
+    #empty p { font-size: 1.2rem; letter-spacing: 0.1em; }
+
+    /* Category colors cycling */
+    .cat-0 { color: #00d4ff; border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.08); }
+    .cat-1 { color: #7b2fff; border-color: rgba(123,47,255,0.4); background: rgba(123,47,255,0.08); }
+    .cat-2 { color: #ff2d78; border-color: rgba(255,45,120,0.4); background: rgba(255,45,120,0.08); }
+    .cat-3 { color: #ffb700; border-color: rgba(255,183,0,0.4); background: rgba(255,183,0,0.08); }
+    .cat-4 { color: #00ff9d; border-color: rgba(0,255,157,0.4); background: rgba(0,255,157,0.08); }
+    .cat-5 { color: #ff6b35; border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.08); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 24px 20px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* TV-friendly focus styles */
+    a:focus, button:focus, input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 600px) {
+      #grid { grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px 12px; }
+      .card-body { padding: 14px; gap: 10px; }
+      .card-name { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">LINK HUB</div>
+    <div class="tagline">Your Personal Gateway</div>
+  </header>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search links..." autocomplete="off" />
+    </div>
+    <div class="filter-tabs" id="tabs">
+      <button class="tab active" data-cat="all">All</button>
+    </div>
+  </div>
+
+  <div id="status">
+    <span class="status-loading"><span class="spinner"></span> Loading links from Excel...</span>
+  </div>
+
+  <div id="grid"></div>
+  <div id="empty">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <p>No links found</p>
+  </div>
+
+  <footer>
+    Edit <strong>links.xlsx</strong> in your GitHub repo to add new links &nbsp;·&nbsp;
+    <a href="links.xlsx" download>Download Excel</a>
+  </footer>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────
+  // The Excel file is fetched from the same GitHub Pages repo root.
+  // If your repo is at https://USERNAME.github.io/REPO/, just use 'links.xlsx'
+  const EXCEL_URL = 'links.xlsx';
+  // ────────────────────────────────────────────────────────────────────────
+
+  let allLinks = [];
+  let activeCategory = 'all';
+  const catColors = {};
+  let catIndex = 0;
+
+  function getCatClass(cat) {
+    if (!cat) return 'cat-0';
+    if (!catColors[cat]) catColors[cat] = `cat-${catIndex++ % 6}`;
+    return catColors[cat];
+  }
+
+  function getFaviconUrl(url) {
+    try {
+      const u = new URL(url);
+      return `https://www.google.com/s2/favicons?sz=64&domain=${u.hostname}`;
+    } catch { return ''; }
+  }
+
+  function getEmoji(name) {
+    const n = name.toLowerCase();
+    if (n.includes('youtube') || n.includes('video')) return '▶';
+    if (n.includes('netflix') || n.includes('prime')) return '🎬';
+    if (n.includes('github')) return '⌨';
+    if (n.includes('google')) return '🔍';
+    if (n.includes('reddit')) return '💬';
+    if (n.includes('twitter') || n.includes('x.com')) return '𝕏';
+    if (n.includes('facebook') || n.includes('fb')) return '👥';
+    if (n.includes('instagram')) return '📷';
+    return '🔗';
+  }
+
+  function renderCards(links) {
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+
+    if (!links.length) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+    grid.innerHTML = links.map((l, i) => {
+      const favicon = getFaviconUrl(l.url);
+      const catClass = getCatClass(l.category);
+      const delay = Math.min(i * 0.04, 0.8);
+      return `
+        <a class="card" href="${escHtml(l.url)}" target="_blank" rel="noopener noreferrer" style="animation-delay:${delay}s">
+          <div class="card-body">
+            <div class="card-favicon">
+              ${favicon
+                ? `<img src="${favicon}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+                   <span class="fallback" style="display:none">${getEmoji(l.name)}</span>`
+                : `<span class="fallback">${getEmoji(l.name)}</span>`
+              }
+            </div>
+            <div class="card-info">
+              <div class="card-name">${escHtml(l.name)}</div>
+              <div class="card-url">${escHtml(l.url.replace(/^https?:\/\//, ''))}</div>
+            </div>
+          </div>
+          ${l.category ? `
+          <div class="card-footer">
+            <span class="card-category ${catClass}">${escHtml(l.category)}</span>
+            <span class="card-arrow">→</span>
+          </div>` : `
+          <div class="card-footer">
+            <span></span>
+            <span class="card-arrow">→</span>
+          </div>`}
+        </a>`;
+    }).join('');
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildTabs(links) {
+    const cats = [...new Set(links.map(l => l.category).filter(Boolean))].sort();
+    const tabs = document.getElementById('tabs');
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'tab';
+      btn.dataset.cat = cat;
+      btn.textContent = cat;
+      tabs.appendChild(btn);
+    });
+  }
+
+  function applyFilters() {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    let results = allLinks;
+    if (activeCategory !== 'all') {
+      results = results.filter(l => l.category === activeCategory);
+    }
+    if (query) {
+      results = results.filter(l =>
+        l.name.toLowerCase().includes(query) ||
+        l.url.toLowerCase().includes(query) ||
+        (l.category || '').toLowerCase().includes(query)
+      );
+    }
+    renderCards(results);
+  }
+
+  function setStatus(html, cls) {
+    const el = document.getElementById('status');
+    el.className = cls ? `status-${cls}` : '';
+    el.innerHTML = html;
+  }
+
+  async function loadExcel() {
+    try {
+      const res = await fetch(EXCEL_URL + '?nocache=' + Date.now());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = await res.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      // Auto-detect columns (case-insensitive)
+      allLinks = rows.map(row => {
+        const keys = Object.keys(row);
+        const nameKey = keys.find(k => /name/i.test(k)) || keys[0];
+        const urlKey  = keys.find(k => /url|link|href/i.test(k)) || keys[1];
+        const catKey  = keys.find(k => /cat|type|group|tag/i.test(k)) || keys[2];
+        return {
+          name: String(row[nameKey] || '').trim(),
+          url:  String(row[urlKey]  || '').trim(),
+          category: catKey ? String(row[catKey] || '').trim() : '',
+        };
+      }).filter(l => l.name && l.url);
+
+      if (!allLinks.length) throw new Error('No valid rows found in Excel');
+
+      buildTabs(allLinks);
+      renderCards(allLinks);
+      setStatus(`✦ ${allLinks.length} links loaded`);
+    } catch (err) {
+      console.error(err);
+      setStatus(`⚠ Could not load links.xlsx — ${err.message}. <br>Make sure links.xlsx is in the same folder as index.html on GitHub Pages.`, 'error');
+    }
+  }
+
+  // Events
+  document.getElementById('search').addEventListener('input', applyFilters);
+
+  document.getElementById('tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategory = btn.dataset.cat;
+    applyFilters();
+  });
+
+  loadExcel();
+</script>
+</body>
+</html>
