@@ -405,22 +405,17 @@
 
 </div>
 <script>
+
+</div>
+<script>
   // ╔══════════════════════════════════════════════════════════════════╗
-  // ║  PASTE YOUR GOOGLE SHEET URL BELOW  (edit URL is fine)               ║
+  // ║  STEP 1 — Paste your Google Apps Script Web App URL below      ║
   // ║                                                                  ║
-  // ║  How to get it:                                                  ║
-  // ║  1. Open your Google Sheet                                       ║
-  // ║  2. Click Share → "Anyone with the link" → Viewer                               ║
-  // ║  3. Copy the URL from your address bar         ║
-  // ║  4. Paste it below — NO need to publish to web               ║
+  // ║  See SETUP.md (or the instructions below) to get this URL.     ║
   // ╚══════════════════════════════════════════════════════════════════╝
-  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1qLBIiy3MfXkd-uIwWAmof88wuZR1Lw6TGC-WMqyfecg/edit?usp=sharing';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWX9XDgXowbW8RhAakF5aAs4MDzTNaErUv91fqecwBlLaTDUJKK_31G3r_Jlanu3aHaw/exec';
 
-  // Sheet column names (case-insensitive, partial match is fine)
-  // Default expects: Name | URL | Category
-  // Change these if your headers are different, e.g. 'title', 'link', 'type'
-
-  // ── internals (no need to edit below) ─────────────────────────────
+  // ── internals ──────────────────────────────────────────────────────
   let allLinks = [];
   let activeCategory = 'all';
   const catColors = {};
@@ -439,17 +434,17 @@
 
   function emoji(name) {
     const n = (name||'').toLowerCase();
-    if (n.includes('youtube'))                       return '▶';
-    if (n.includes('netflix')||n.includes('prime'))  return '🎬';
-    if (n.includes('github'))                        return '⌨';
-    if (n.includes('google'))                        return '🔍';
-    if (n.includes('reddit'))                        return '💬';
-    if (n.includes('twitter')||n.includes('x.com'))  return '𝕏';
-    if (n.includes('instagram'))                     return '📷';
-    if (n.includes('facebook'))                      return '👥';
-    if (n.includes('twitch'))                        return '🎮';
-    if (n.includes('spotify')||n.includes('music'))  return '🎵';
-    if (n.includes('news')||n.includes('bbc'))       return '📰';
+    if (n.includes('youtube'))                      return '▶';
+    if (n.includes('netflix')||n.includes('prime')) return '🎬';
+    if (n.includes('github'))                       return '⌨';
+    if (n.includes('google'))                       return '🔍';
+    if (n.includes('reddit'))                       return '💬';
+    if (n.includes('twitter')||n.includes('x.com')) return '𝕏';
+    if (n.includes('instagram'))                    return '📷';
+    if (n.includes('facebook'))                     return '👥';
+    if (n.includes('twitch'))                       return '🎮';
+    if (n.includes('spotify')||n.includes('music')) return '🎵';
+    if (n.includes('news')||n.includes('bbc'))      return '📰';
     return '🔗';
   }
 
@@ -457,29 +452,6 @@
     return String(s||'')
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // Robust CSV parser — handles quoted fields that contain commas
-  function parseCSV(text) {
-    const rows = [];
-    const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      const cols = [];
-      let cur = '', inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') {
-          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
-          else inQ = !inQ;
-        } else if (ch === ',' && !inQ) {
-          cols.push(cur.trim()); cur = '';
-        } else cur += ch;
-      }
-      cols.push(cur.trim());
-      rows.push(cols);
-    }
-    return rows;
   }
 
   function renderCards(links) {
@@ -522,8 +494,10 @@
   }
 
   function buildTabs(links) {
-    const cats = [...new Set(links.map(l=>l.category).filter(Boolean))].sort();
+    const cats = [...new Set(links.map(l => l.category).filter(Boolean))].sort();
     const tabs = document.getElementById('tabs');
+    // remove old dynamic tabs first
+    document.querySelectorAll('.tab:not([data-cat="all"])').forEach(t => t.remove());
     cats.forEach(cat => {
       const btn = document.createElement('button');
       btn.className = 'tab';
@@ -552,80 +526,26 @@
     el.innerHTML = html;
   }
 
-  // Extract the Sheet ID from any Google Sheets URL format
-  function extractSheetId(url) {
-    const m = url.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-    return m ? m[1] : null;
-  }
-
-  // Extract gid (tab id) if present, default 0
-  function extractGid(url) {
-    const m = url.match(/[#&?]gid=(\d+)/);
-    return m ? m[1] : '0';
-  }
-
-  // Parse Google Sheets JSON response into rows array
-  function parseGSheetsJSON(json) {
-    const table = json.table;
-    if (!table || !table.rows) return [];
-    const cols = table.cols.map(c => (c.label || '').trim());
-    const rows = [cols];
-    for (const row of table.rows) {
-      if (!row.c) continue;
-      const cells = row.c.map(cell => cell && cell.v != null ? String(cell.v).trim() : '');
-      rows.push(cells);
-    }
-    return rows;
-  }
-
   async function loadSheet() {
-    if (!SHEET_CSV_URL || SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_CSV_URL') {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL') {
       setStatus(
-        '⚙ <strong>One-time setup:</strong> Open <code>index.html</code>, find <code>SHEET_CSV_URL</code> and paste your Google Sheet URL (the normal edit URL is fine too).',
+        '⚙ <strong>Setup needed:</strong> Follow the instructions in <code>SETUP.md</code> to create your Apps Script, then paste the URL into <code>index.html</code>.',
         'error'
       );
       return;
     }
 
     try {
-      const sheetId = extractSheetId(SHEET_CSV_URL);
-      if (!sheetId) throw new Error('Could not find a Sheet ID in the URL — paste the full Google Sheets URL.');
+      // Apps Script Web App returns JSON with CORS headers — works everywhere
+      const res = await fetch(APPS_SCRIPT_URL, { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-      const gid = extractGid(SHEET_CSV_URL);
+      if (data.error) throw new Error(data.error);
+      if (!Array.isArray(data.links)) throw new Error('Unexpected response from Apps Script.');
 
-      // Use the Google Visualization/Gviz API — works cross-origin, no publish needed,
-      // no proxy needed, just requires the sheet to be shared as "Anyone with the link can view"
-      const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid}`;
-
-      const res = await fetch(gvizUrl, { cache: 'no-cache' });
-      if (!res.ok) throw new Error(`HTTP ${res.status} — make sure the sheet is shared as "Anyone with the link can view"`);
-
-      const raw = await res.text();
-      // Gviz wraps response in: google.visualization.Query.setResponse({...});
-      const jsonStr = raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
-      const json = JSON.parse(jsonStr);
-
-      const rows = parseGSheetsJSON(json);
-      if (rows.length < 2) throw new Error('Sheet looks empty — add some rows with Name and URL columns!');
-
-      // Auto-detect columns from header row
-      const headers = rows[0].map(h => h.toLowerCase());
-      const iName = headers.findIndex(h => /name|title/i.test(h));
-      const iUrl  = headers.findIndex(h => /url|link|href/i.test(h));
-      const iCat  = headers.findIndex(h => /cat|type|group|tag/i.test(h));
-
-      if (iName < 0 || iUrl < 0)
-        throw new Error('Need columns called "Name" and "URL" in row 1. Check your sheet headers.');
-
-      allLinks = rows.slice(1)
-        .map(r => ({
-          name:     (r[iName]||'').trim(),
-          url:      (r[iUrl] ||'').trim(),
-          category: iCat >= 0 ? (r[iCat]||'').trim() : '',
-        }))
-        .filter(l => l.name && l.url);
-
-      if (!allLinks.length) throw new Error('No valid rows found — fill in your sheet!');
+      allLinks = data.links.filter(l => l.name && l.url);
+      if (!allLinks.length) throw new Error('No valid rows found — add Name + URL rows to your sheet!');
 
       buildTabs(allLinks);
       renderCards(allLinks);
@@ -634,7 +554,7 @@
       console.error(err);
       setStatus(
         `⚠ ${esc(err.message)}<br>
-         <small>Make sure the sheet is shared → "Anyone with the link can view" · row 1 has "Name" and "URL" columns</small>`,
+         <small>Check: Apps Script URL is correct · Script is deployed as "Anyone" can access</small>`,
         'error'
       );
     }
